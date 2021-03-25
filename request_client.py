@@ -38,7 +38,10 @@ class PastebinClientApi():
         headers = {
             "X-Auntification": self.token}
         r = self.session.get(url, headers=headers, timeout=self.timeout)
-        return r.json()
+        while r.json()['next'] is not None:
+            r = self.session.get(url, headers=headers, timeout=self.timeout)
+            url = r.json()['next']
+            yield r.json()
 
     def create_note(self, text: str, type: str):
         url = self.url + '/api/notes/notes/'
@@ -69,7 +72,13 @@ class PastebinClientApi():
         self.session.close()
 
 api = PastebinClientApi("A", "A", "http://127.0.0.1:8000")
-api.show_notes()
+for item in api.show_notes():
+    print(item)
+x = api.show_notes()
+print(next(x))
+print(next(x))
+print(next(x))
+print(next(x))
 api.close()
 
 
